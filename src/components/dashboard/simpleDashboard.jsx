@@ -61,10 +61,12 @@ const SimpleDashboard = () => {
         search: filters.search,
         status: filters.status
       });
+
+      console.log('response 4555:', response.data.data.content);
       
       if (response.success) {
-        setDocuments(response.data || []);
-        console.log('✅ Documents fetched successfully:', response.data.length || 0);
+        setDocuments(response.data.data.content || []);
+        console.log('✅ Documents fetched successfully:', response.data.data.content?.length || 0);
       } else {
         showNotification('error', 'Erreur lors du chargement des documents');
       }
@@ -387,21 +389,21 @@ const SimpleDashboard = () => {
                         <User className="h-5 w-5 text-gray-400 mr-3" />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {doc.userName || 'Utilisateur inconnu'}
+                            {doc.nomClient || 'Utilisateur inconnu'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {doc.userEmail || 'Email non disponible'}
+                            {doc.cni || 'cni non disponible'}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{doc.documentType || 'Type inconnu'}</div>
+                      <div className="text-sm text-gray-900">{doc.documentType || 'Creation de compte'}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center text-sm text-gray-500">
                         <Calendar className="h-4 w-4 mr-2" />
-                        {doc.submissionDate ? new Date(doc.submissionDate).toLocaleDateString('fr-FR') : 'Date inconnue'}
+                        {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString('fr-FR') : 'Date inconnue'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
