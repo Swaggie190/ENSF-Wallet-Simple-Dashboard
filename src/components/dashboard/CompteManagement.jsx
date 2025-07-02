@@ -296,6 +296,10 @@ const CompteManagement = () => {
       limiteDailyTransfer: parseFloat(formData.limiteDailyTransfer) || 2000000,
       limiteMonthlyOperations: parseFloat(formData.limiteMonthlyOperations) || 10000000
     };
+
+    if (modalType === 'createCard') {
+    return; // Card form has its own handler
+  }
     
     if (modalType === 'add') {
       await createCompte(compteData);
@@ -783,6 +787,7 @@ const CompteManagement = () => {
               {modalType === 'add' ? 'Nouveau Compte' : 
                modalType === 'edit' ? 'Modifier Compte' :
                modalType === 'view' ? 'Détails du Compte' :
+               modalType === 'createCard' ? 'Créer une Carte' :
                modalType === 'delete' ? 'Fermer Compte' :
                'Gestion Compte'}
             </h3>

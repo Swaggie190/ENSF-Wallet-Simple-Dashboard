@@ -293,7 +293,9 @@ const AgencyManagement = () => {
             <h3 className="text-lg font-semibold text-gray-900">
               {modalType === 'add' ? 'Nouvelle Agence' : 
                modalType === 'edit' ? 'Modifier Agence' :
+               modalType === 'createCard' ? 'Créer une Carte' :
                modalType === 'view' ? 'Détails Agence' : 'Supprimer Agence'}
+               
             </h3>
             <button onClick={closeModal} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg">
               <X className="h-5 w-5" />
