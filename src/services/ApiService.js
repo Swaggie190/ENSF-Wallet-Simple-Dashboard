@@ -276,26 +276,26 @@ class AgenceService {
   }
 
   /**
-   * Get document details for review
-   * @param {string} documentId - Document ID
-   * @returns {Promise<Object>} Document details with metadata
-   */
-  async getDocumentForReview(documentId) {
-    try {
-      this.ensureAuthenticated();
-      console.log('📄 Fetching document for review:', documentId);
+ * Get detailed document review data
+ * @param {string} documentId - Document ID to review
+ * @returns {Promise<Object>} Detailed document review data
+ */
+async getDocumentReview(documentId) {
+  try {
+    this.ensureAuthenticated();
+    console.log(`🔍 Fetching document review for ID: ${documentId}`);
 
-      const response = await this.httpClient.get(
-        `${this.baseUrl}${API_CONFIG.ENDPOINTS.DOCUMENTS.REVIEW(documentId)}`
-      );
+    const response = await httpClient.get(
+      `${this.baseUrl}${ENDPOINTS.AGENCE_SERVICE.DOCUMENTS.REVIEW(documentId)}`
+    );
 
-      console.log('✅ Document details fetched successfully');
-      return response;
-    } catch (error) {
-      console.error('❌ Failed to fetch document details:', error);
-      return { success: false, error: this.formatError(error.message) };
-    }
+    console.log('✅ Document review data fetched successfully');
+    return response.data;
+  } catch (error) {
+    console.error('❌ Failed to fetch document review:', error);
+    throw error;
   }
+}
 
   /**
    * Approve document
@@ -503,8 +503,119 @@ class AgenceService {
 
     return errorMessage;
   }
-}
 
+  /**
+   * Get all agencies
+   * @returns {Promise<Object>} List of agencies
+   */
+  async getAllAgencies() {
+    try {
+      this.ensureAuthenticated();
+      console.log('🏢 Fetching all agencies');
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/agencies`
+      );
+
+      console.log('✅ Agencies fetched successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch agencies:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create new agency
+   * @param {Object} agencyData - Agency data to create
+   * @returns {Promise<Object>} Created agency
+   */
+  async createAgency(agencyData) {
+    try {
+      this.ensureAuthenticated();
+      console.log('🏢 Creating new agency');
+
+      const response = await this.httpClient.post(
+        `${this.baseUrl}/api/v1/agence/admin/agencies`,
+        agencyData
+      );
+
+      console.log('✅ Agency created successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to create agency:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update existing agency
+   * @param {string} agencyId - Agency ID to update
+   * @param {Object} agencyData - Updated agency data
+   * @returns {Promise<Object>} Updated agency
+   */
+  async updateAgency(agencyId, agencyData) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`🏢 Updating agency ${agencyId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/agencies/${agencyId}`,
+        agencyData
+      );
+
+      console.log('✅ Agency updated successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to update agency:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete agency
+   * @param {string} agencyId - Agency ID to delete
+   * @returns {Promise<Object>} Delete confirmation
+   */
+  async deleteAgency(agencyId) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`🏢 Deleting agency ${agencyId}`);
+
+      const response = await this.httpClient.delete(
+        `${this.baseUrl}/api/v1/agence/admin/agencies/${agencyId}`
+      );
+
+      console.log('✅ Agency deleted successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to delete agency:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get agency details
+   * @param {string} agencyId - Agency ID
+   * @returns {Promise<Object>} Agency details
+   */
+  async getAgencyDetails(agencyId) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`🏢 Fetching agency details ${agencyId}`);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/agencies/${agencyId}`
+      );
+
+      console.log('✅ Agency details fetched successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch agency details:', error);
+      throw error;
+    }
+  }
+}
 // =====================================
 // MAIN API SERVICE - Simple Export
 // =====================================
@@ -545,6 +656,26 @@ class ApiService {
 
   async bulkRejectDocuments(documentIds, rejectionData) {
     return this.agenceService.bulkRejectDocuments(documentIds, rejectionData);
+  }
+
+  async getAllAgencies() {
+    return this.agenceService.getAllAgencies();
+  }
+
+  async createAgency(agencyData) {
+    return this.agenceService.createAgency(agencyData);
+  }
+
+  async updateAgency(agencyId, agencyData) {
+    return this.agenceService.updateAgency(agencyId, agencyData);
+  }
+
+  async deleteAgency(agencyId) {
+    return this.agenceService.deleteAgency(agencyId);
+  }
+
+  async getAgencyDetails(agencyId) {
+    return this.agenceService.getAgencyDetails(agencyId);
   }
 
   // Utility methods

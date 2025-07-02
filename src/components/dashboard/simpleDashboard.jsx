@@ -6,6 +6,8 @@ import {
   ChevronRight, X, MessageSquare
 } from 'lucide-react';
 import ApiService from '../../services/ApiService';
+import DocumentReviewModal from './DocumentReviewModal';
+import AgencyManagement from './AgencyManagement';
 
 /**
  * 🏦 Simple Admin Dashboard - Focused Implementation
@@ -420,6 +422,16 @@ const SimpleDashboard = () => {
                         <Eye className="h-4 w-4" />
                         Examiner
                       </button>
+                      <button
+                        onClick={() => {
+                          setSelectedDocument(doc);
+                          handleApproveDocument(doc.id);
+                        }}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Approuver
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -474,13 +486,7 @@ const SimpleDashboard = () => {
         {/* Main Content Area */}
         <main className="flex-1 p-6 overflow-auto">
           {activeTab === 'documents' && <DocumentsTab />}
-          {activeTab === 'agencies' && (
-            <PlaceholderTab 
-              title="Gestion des Agences" 
-              description="Module CRUD pour les agences bancaires"
-              icon={Building2}
-            />
-          )}
+          {activeTab === 'agencies' && <AgencyManagement />}
           {activeTab === 'accounts' && (
             <PlaceholderTab 
               title="Gestion des Comptes" 
@@ -492,23 +498,18 @@ const SimpleDashboard = () => {
       </div>
 
       {/* Document Review Modal - To be implemented next */}
-      {showReviewModal && selectedDocument && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
-            {/* Modal content will be implemented in next step */}
-            <div className="p-6 text-center">
-              <h3 className="text-lg font-semibold mb-4">Examen du Document</h3>
-              <p className="text-gray-600 mb-4">Modal de révision en cours d'implémentation...</p>
-              <button
-                onClick={() => setShowReviewModal(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {showReviewModal && selectedDocument && (
+        <DocumentReviewModal 
+            documentId={selectedDocument.id}
+            onClose={() => {
+            setShowReviewModal(false);
+            setSelectedDocument(null);
+            }}
+            onApprove={(documentId, comment) => handleApproveDocument(documentId, comment)}
+            onReject={(documentId, reason) => handleRejectDocument(documentId, reason)}
+            isLoading={loading.action}
+        />
+        )}
     </div>
   );
 };
