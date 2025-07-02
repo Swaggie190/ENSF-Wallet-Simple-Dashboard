@@ -8,6 +8,7 @@ import {
 import ApiService from '../../services/ApiService';
 import DocumentReviewModal from './DocumentReviewModal';
 import AgencyManagement from './AgencyManagement';
+import CompteManagement from './CompteManagement';
 
 /**
  * 🏦 Simple Admin Dashboard - Focused Implementation
@@ -516,13 +517,7 @@ const SimpleDashboard = ({ onLogout }) => {
         <main className="flex-1 p-6 overflow-auto">
           {activeTab === 'documents' && <DocumentsTab />}
           {activeTab === 'agencies' && <AgencyManagement />}
-          {activeTab === 'accounts' && (
-            <PlaceholderTab 
-              title="Gestion des Comptes" 
-              description="Module CRUD pour les comptes utilisateurs"
-              icon={CreditCard}
-            />
-          )}
+          {activeTab === 'accounts' && <CompteManagement />}
         </main>
       </div>
 

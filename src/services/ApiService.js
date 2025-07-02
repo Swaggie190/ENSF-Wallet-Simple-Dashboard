@@ -24,6 +24,7 @@
 const API_CONFIG = {
   // Base URLs for different services
   BASE_URLS: {
+    COMPTE_SERVICE: import.meta.env.VITE_COMPTE_SERVICE_URL || 'http://localhost:8096',
     AGENCE_SERVICE: import.meta.env.VITE_AGENCE_SERVICE_URL || 'http://localhost:8092',
     USER_SERVICE: import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:8091'
   },
@@ -215,6 +216,7 @@ class AgenceService {
   constructor() {
     this.httpClient = new SimpleHttpClient();
     this.baseUrl = API_CONFIG.BASE_URLS.AGENCE_SERVICE;
+    this.secondaryBaseUrl = API_CONFIG.BASE_URLS.COMPTE_SERVICE; // For compte-related operations
   }
 
   /**
@@ -618,6 +620,568 @@ async getDocumentReview(documentId) {
       throw error;
     }
   }
+
+  /**
+   * 💳 Compte Management API Methods
+   * 
+   * Add these methods to the AgenceService class in ApiService.js
+   * These methods handle all compte-related CRUD operations
+   */
+
+  // Add these methods to the AgenceService class
+
+  /**
+   * Get all comptes with pagination and filtering
+   * @param {Object} params - Query parameters (page, size, status, type, search)
+   * @returns {Promise<Object>} List of comptes with pagination info
+   */
+  async getAllComptes(params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log('💳 Fetching all comptes with params:', params);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/comptes/getAllComptes`,
+        params
+      );
+
+      console.log('✅ Comptes fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch comptes:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Get compte details by ID including transaction history
+   * @param {string} compteId - Compte ID
+   * @returns {Promise<Object>} Detailed compte information
+   */
+  async getCompteDetails(compteId) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Fetching compte details: ${compteId}`);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}`
+      );
+
+      console.log('✅ Compte details fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch compte details:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Create new compte
+   * @param {Object} compteData - Compte data to create
+   * @returns {Promise<Object>} Created compte
+   */
+  async createCompte(compteData) {
+    try {
+      this.ensureAuthenticated();
+      console.log('💳 Creating new compte:', compteData);
+
+      const response = await this.httpClient.post(
+        `${this.secondaryBaseUrl}/api/v1/comptes/create`,
+        compteData
+      );
+
+      console.log('✅ Compte created successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to create compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Update existing compte
+   * @param {string} compteId - Compte ID to update
+   * @param {Object} compteData - Updated compte data
+   * @returns {Promise<Object>} Updated compte
+   */
+  async updateCompte(compteId, compteData) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Updating compte ${compteId}:`, compteData);
+
+      const response = await this.httpClient.put(
+        `${this.secondaryBaseUrl}/api/v1/comptes/${compteId}`,
+        compteData
+      );
+
+      console.log('✅ Compte updated successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to update compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Close/Delete compte (soft delete - changes status to CLOSED)
+   * @param {string} compteId - Compte ID to close
+   * @returns {Promise<Object>} Closure confirmation
+   */
+  async closeCompte(compteId) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Closing compte: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/close`,
+        { reason: 'Fermé par l\'administrateur' }
+      );
+
+      console.log('✅ Compte closed successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to close compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Block compte
+   * @param {string} compteId - Compte ID to block
+   * @param {Object} blockData - Block reason and metadata
+   * @returns {Promise<Object>} Block confirmation
+   */
+  async blockCompte(compteId, blockData = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`🔒 Blocking compte: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/block`,
+        {
+          reason: blockData.reason || 'Bloqué par l\'administrateur',
+          blockedBy: 'ADMIN',
+          ...blockData
+        }
+      );
+
+      console.log('✅ Compte blocked successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to block compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Unblock compte
+   * @param {string} compteId - Compte ID to unblock
+   * @returns {Promise<Object>} Unblock confirmation
+   */
+  async unblockCompte(compteId) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`🔓 Unblocking compte: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/unblock`,
+        { unblockedBy: 'ADMIN' }
+      );
+
+      console.log('✅ Compte unblocked successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to unblock compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Update compte limits
+   * @param {string} compteId - Compte ID
+   * @param {Object} limitsData - New limits data
+   * @returns {Promise<Object>} Updated limits
+   */
+  async updateCompteLimits(compteId, limitsData) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Updating compte limits for: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/limits`,
+        limitsData
+      );
+
+      console.log('✅ Compte limits updated successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to update compte limits:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Get compte transaction history
+   * @param {string} compteId - Compte ID
+   * @param {Object} params - Query parameters (page, size, dateFrom, dateTo, type)
+   * @returns {Promise<Object>} Transaction history
+   */
+  async getCompteTransactions(compteId, params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Fetching transactions for compte: ${compteId}`);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/transactions`,
+        params
+      );
+
+      console.log('✅ Compte transactions fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch compte transactions:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Get compte statistics
+   * @param {Object} params - Query parameters (dateFrom, dateTo, agenceId)
+   * @returns {Promise<Object>} Compte statistics
+   */
+  async getCompteStatistics(params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log('💳 Fetching compte statistics');
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/statistics`,
+        params
+      );
+
+      console.log('✅ Compte statistics fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch compte statistics:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Activate compte (change status from PENDING to ACTIVE)
+   * @param {string} compteId - Compte ID to activate
+   * @param {Object} activationData - Activation metadata
+   * @returns {Promise<Object>} Activation confirmation
+   */
+  async activateCompte(compteId, activationData = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Activating compte: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/activate`,
+        {
+          activatedBy: 'ADMIN',
+          ...activationData
+        }
+      );
+
+      console.log('✅ Compte activated successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to activate compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Suspend compte
+   * @param {string} compteId - Compte ID to suspend
+   * @param {Object} suspensionData - Suspension reason and metadata
+   * @returns {Promise<Object>} Suspension confirmation
+   */
+  async suspendCompte(compteId, suspensionData = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Suspending compte: ${compteId}`);
+
+      const response = await this.httpClient.put(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/${compteId}/suspend`,
+        {
+          reason: suspensionData.reason || 'Suspendu par l\'administrateur',
+          suspendedBy: 'ADMIN',
+          ...suspensionData
+        }
+      );
+
+      console.log('✅ Compte suspended successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to suspend compte:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Get comptes by agency
+   * @param {string} agencyId - Agency ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} List of comptes for the agency
+   */
+  async getComptesByAgency(agencyId, params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Fetching comptes for agency: ${agencyId}`);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/agencies/${agencyId}/comptes`,
+        params
+      );
+
+      console.log('✅ Agency comptes fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch agency comptes:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Get comptes by client
+   * @param {string} clientId - Client ID
+   * @param {Object} params - Query parameters
+   * @returns {Promise<Object>} List of comptes for the client
+   */
+  async getComptesByClient(clientId, params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Fetching comptes for client: ${clientId}`);
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/clients/${clientId}/comptes`,
+        params
+      );
+
+      console.log('✅ Client comptes fetched successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to fetch client comptes:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Bulk operations on comptes
+   * @param {Array} compteIds - Array of compte IDs
+   * @param {string} operation - Operation type ('activate', 'block', 'unblock', 'suspend')
+   * @param {Object} operationData - Operation metadata
+   * @returns {Promise<Object>} Bulk operation results
+   */
+  async bulkCompteOperation(compteIds, operation, operationData = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log(`💳 Performing bulk ${operation} on comptes:`, compteIds);
+
+      const response = await this.httpClient.post(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/bulk/${operation}`,
+        {
+          compteIds,
+          ...operationData
+        }
+      );
+
+      console.log(`✅ Bulk ${operation} completed successfully`);
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error(`❌ Failed to perform bulk ${operation}:`, error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Export comptes data
+   * @param {Object} params - Export parameters (format, filters)
+   * @returns {Promise<Object>} Export data or download link
+   */
+  async exportComptes(params = {}) {
+    try {
+      this.ensureAuthenticated();
+      console.log('💳 Exporting comptes data');
+
+      const response = await this.httpClient.get(
+        `${this.baseUrl}/api/v1/agence/admin/comptes/export`,
+        params
+      );
+
+      console.log('✅ Comptes exported successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (error) {
+      console.error('❌ Failed to export comptes:', error);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(error.message)
+      };
+    }
+  }
+
+  /**
+   * Create card for compte
+   * @param {Object} cardData - Card data to create
+   * @returns {Promise<Object>} Created card response
+   */
+  async createCard(cardData) {
+    try {
+      // You may need to adapt the following lines to your context,
+      // as setIsSubmitting, selectedCompte, resetModal, showNotification, and setError
+      // are not defined in this service class.
+      // This is a placeholder for actual implementation.
+      // Remove or adapt UI-specific logic as needed.
+
+      // Example implementation (service logic only):
+      const response = await this.httpClient.post(
+        `${this.secondaryBaseUrl}/api/v1/cartes/create`,
+        cardData
+      );
+      console.log('✅ Card created successfully');
+      return {
+        success: true,
+        data: response.data || response,
+        error: null
+      };
+    } catch (err) {
+      console.error('❌ Error creating card:', err);
+      return {
+        success: false,
+        data: null,
+        error: this.formatError(err.message)
+      };
+    }
+  }
 }
 // =====================================
 // MAIN API SERVICE - Simple Export
@@ -679,6 +1243,74 @@ class ApiService {
 
   async getAgencyDetails(agencyId) {
     return this.agenceService.getAgencyDetails(agencyId);
+  }
+
+    async getAllComptes(params) {
+    return this.agenceService.getAllComptes(params);
+  }
+
+  async getCompteDetails(compteId) {
+    return this.agenceService.getCompteDetails(compteId);
+  }
+
+  async createCompte(compteData) {
+    return this.agenceService.createCompte(compteData);
+  }
+
+  async updateCompte(compteId, compteData) {
+    return this.agenceService.updateCompte(compteId, compteData);
+  }
+
+  async closeCompte(compteId) {
+    return this.agenceService.closeCompte(compteId);
+  }
+
+  async blockCompte(compteId, blockData) {
+    return this.agenceService.blockCompte(compteId, blockData);
+  }
+
+  async unblockCompte(compteId) {
+    return this.agenceService.unblockCompte(compteId);
+  }
+
+  async activateCompte(compteId, activationData) {
+    return this.agenceService.activateCompte(compteId, activationData);
+  }
+
+  async suspendCompte(compteId, suspensionData) {
+    return this.agenceService.suspendCompte(compteId, suspensionData);
+  }
+
+  async updateCompteLimits(compteId, limitsData) {
+    return this.agenceService.updateCompteLimits(compteId, limitsData);
+  }
+
+  async getCompteTransactions(compteId, params) {
+    return this.agenceService.getCompteTransactions(compteId, params);
+  }
+
+  async getCompteStatistics(params) {
+    return this.agenceService.getCompteStatistics(params);
+  }
+
+  async getComptesByAgency(agencyId, params) {
+    return this.agenceService.getComptesByAgency(agencyId, params);
+  }
+
+  async getComptesByClient(clientId, params) {
+    return this.agenceService.getComptesByClient(clientId, params);
+  }
+
+  async bulkCompteOperation(compteIds, operation, operationData) {
+    return this.agenceService.bulkCompteOperation(compteIds, operation, operationData);
+  }
+
+  async exportComptes(params) {
+    return this.agenceService.exportComptes(params);
+  }
+
+  async createCard(cardData) {
+    return this.agenceService.createCard(cardData);
   }
 
   // Utility methods
