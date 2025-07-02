@@ -19,7 +19,7 @@ import AgencyManagement from './AgencyManagement';
  * 
  * Professional, maintainable code with clear commenting
  */
-const SimpleDashboard = () => {
+const SimpleDashboard = ({ onLogout }) => {
   // =====================================
   // STATE MANAGEMENT
   // =====================================
@@ -238,7 +238,10 @@ const SimpleDashboard = () => {
 
       {/* Footer */}
       <div className="p-4 border-t border-gray-700">
-        <button className="w-full flex items-center gap-3 p-3 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 p-3 text-gray-300 hover:bg-gray-700 rounded-lg transition-colors"
+        >
           <LogOut className="h-5 w-5 flex-shrink-0" />
           {!sidebarCollapsed && <span>Déconnexion</span>}
         </button>
@@ -455,6 +458,32 @@ const SimpleDashboard = () => {
     </div>
   );
 
+  /**
+   * Handle user logout
+   */
+  const handleLogout = () => {
+    try {
+      console.log('🚪 Logging out user...');
+      
+      // Clear any pending states
+      setLoading({ documents: false, action: false });
+      setShowReviewModal(false);
+      setSelectedDocument(null);
+      
+      // Call the parent logout function
+      if (onLogout) {
+        onLogout();
+      }
+      
+      console.log('✅ Logout completed');
+    } catch (error) {
+      console.error('❌ Error during logout:', error);
+      // Force logout even if there's an error
+      if (onLogout) {
+        onLogout();
+      }
+    }
+  };
   // =====================================
   // MAIN RENDER
   // =====================================

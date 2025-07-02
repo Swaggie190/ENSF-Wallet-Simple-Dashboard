@@ -57,13 +57,11 @@ const AgencyManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // TODO: Implement this endpoint in ApiService
+        console.log('🏢 Fetching all agencies...');
       const response = await ApiService.agenceService.getAllAgencies();
       
       if (response.success) {
         setAgencies(response.data || []);
-        console.log('✅ Agencies fetched successfully');
       } else {
         setError(response.error || 'Erreur lors du chargement des agences');
       }

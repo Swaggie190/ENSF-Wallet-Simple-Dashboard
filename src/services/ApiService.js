@@ -514,11 +514,14 @@ async getDocumentReview(documentId) {
       console.log('🏢 Fetching all agencies');
 
       const response = await this.httpClient.get(
-        `${this.baseUrl}/api/v1/agence/admin/agencies`
+        `${this.baseUrl}/api/v1/agence/getAgences`
       );
 
       console.log('✅ Agencies fetched successfully');
-      return response.data;
+      console.log(`🏢 Total agencies: ${response.data.length}`);
+      console.log('Response:', response.data);
+      console.log('success:', response.success);
+      return response;
     } catch (error) {
       console.error('❌ Failed to fetch agencies:', error);
       throw error;
@@ -536,7 +539,7 @@ async getDocumentReview(documentId) {
       console.log('🏢 Creating new agency');
 
       const response = await this.httpClient.post(
-        `${this.baseUrl}/api/v1/agence/admin/agencies`,
+        `${this.baseUrl}/api/v1/agence/add`,
         agencyData
       );
 
